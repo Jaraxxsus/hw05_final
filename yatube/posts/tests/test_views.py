@@ -73,7 +73,7 @@ class TestViews(TestCase):
         оставить комментарий"""
         response = self.guest_client.get(
             reverse('posts:add_comment', kwargs={'post_id': self.post.pk})
-            )
+        )
         self.assertRedirects(
             response,
             f"{reverse('users:login')}?next="

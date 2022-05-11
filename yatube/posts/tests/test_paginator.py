@@ -52,6 +52,7 @@ class PaginatorTestView(TestCase):
 
                 self.assertEqual(
                     len(response.context["page_obj"]),
-                    self.COUNT_POSTS - (
-                            self.count_pages - self.SUBTRACTABLE_PAGE)
-                    * settings.POST_PER_PAGE)
+                    self.COUNT_POSTS - (self.count_pages -
+                                        self.SUBTRACTABLE_PAGE)
+                    * settings.POST_PER_PAGE
+                )

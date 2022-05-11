@@ -3,7 +3,7 @@ from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post
+from posts.models import Post
 
 User = get_user_model()
 
@@ -41,4 +41,3 @@ class TestCache(TestCase):
             response_after_clear_cache.content,
             response_before_deleting_post.content
         )
-
