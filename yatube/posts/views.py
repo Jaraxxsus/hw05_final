@@ -59,7 +59,8 @@ def profile(request, username):
         ).exists()
     else:
         is_follower = False
-
+    # is_not_current_user проверяет не является ли
+    # пользователь текущем, для скрытия кнопки "подписаться"
     is_not_current_user = author != request.user
     count_of_posts = paginator.count
 
@@ -146,7 +147,6 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    # информация о текущем пользователе доступна в переменной request.user
     post_list = Post.objects.filter(author__following__user=request.user)
 
     paginator = Paginator(post_list, POST_PER_PAGE)
