@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title%} новый пост {% endblock %}
+{% block content %}
+{% load user_filters %}
+<div class="row justify-content-center">
+  <div class="col-md-8 p-5">
+    <div class="card">
+      <div class="card-header">
+          {{ title }}
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group row my-3 p-3">
+                {% if field.errors  %}
+                <div class="alert alert-primary">
+                  {{field.errors}}
+                </div>
+                {% endif %}
+                <div>
+                    {{ field.label }}
+                    {% if field.field.required %}
+                    <span class="required text-danger" >*</span>
+                    {% endif %}
+                 </div>
+                {{ field|addclass:"form-control" }}
+                <small class="form-text">{{ field.help_text}}</small>
+            </div>
+            {% endfor %}
+            <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">
+                {% if is_edit %}
+                    сохранить
+                {% else %}
+                    Добавить
+                {% endif %}
+            </button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

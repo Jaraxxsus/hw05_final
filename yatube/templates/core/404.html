@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Custom 404{% endblock %}
 {% block content %}
-  <h1>Custom 505</h1>
-  <p>Что-то пошло не так, мы делаем все возможное что бы это исправить</p>
+  <h1>Custom 404</h1>
+  <p>Страницы с адресом {{ path }} не существует</p>
   <a href="{% url 'posts:index' %}">Идите на главную</a>
 {% endblock %}
