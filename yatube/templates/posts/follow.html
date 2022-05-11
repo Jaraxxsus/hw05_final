@@ -10,4 +10,5 @@
      {% for post in page_obj %}
        <p>{% include "includes/post.html"%}</p>
      {% endfor %}
+    {% include 'includes/paginator.html' %}
 {% endblock %}

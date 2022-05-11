@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
-from posts.models import Group, Post
 
+from posts.models import Group, Post
 
 User = get_user_model()
 
@@ -35,7 +35,6 @@ class TestUrls(TestCase):
         )
         cls.not_author_user = (
             User.objects.create_user(username='NotAuthor'))
-
 
     def setUp(self):
         self.guest_client = Client()  # Не авторизованный юзер
@@ -149,5 +148,3 @@ class TestUrls(TestCase):
         """Страница 404 имеет корректный шаблон"""
         response = self.guest_client.get("/page_doesnt_exist")
         self.assertTemplateUsed(response, "core/404.html")
-
-

@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -21,7 +20,7 @@ class TestViews(TestCase):
         cls.post = Post.objects.create(
             text="Тестовый пост",
             author=cls.user,
-            group=cls.group,
+            group=cls.group
         )
 
         cls.EXPECTED_COUNT_POSTS: int = 1
@@ -32,7 +31,6 @@ class TestViews(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         cache.clear()
-
 
     def test_pages_correct_context(self):
         """Шаблоны index, group_list, profile
@@ -103,7 +101,3 @@ class TestViews(TestCase):
                 else:
                     self.assertEqual(self.post.image,
                                      response.context["page_obj"][0].image)
-
-
-
-

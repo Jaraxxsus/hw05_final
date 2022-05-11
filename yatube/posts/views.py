@@ -5,8 +5,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
 from yatube.settings import POST_PER_PAGE  # К-во постов на страницу
-from .forms import PostForm, CommentForm
-from .models import Group, Post, User, Follow
+
+from .forms import CommentForm, PostForm
+from .models import Follow, Group, Post, User
 
 
 @cache_page(20)
@@ -142,6 +143,7 @@ def add_comment(request, post_id):
 
     return redirect('posts:post_detail', post_id=post_id)
 
+
 @login_required
 def follow_index(request):
     # информация о текущем пользователе доступна в переменной request.user
@@ -177,13 +179,3 @@ def profile_unfollow(request, username):
     if is_follower.exists():
         is_follower.delete()
     return redirect("posts:profile", username=author)
-
-
-
-
-
-
-
-
-
-
