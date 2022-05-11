@@ -8,4 +8,3 @@ class CreateModel(models.Model):
 
     class Meta:
         abstract = True
-
