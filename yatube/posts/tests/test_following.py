@@ -41,8 +41,9 @@ class TestFollowing(TestCase):
 
     def test_unfollow(self):
         """Текст функционала отписки """
-        self.follower_client.get(reverse("posts:profile_unfollow",
-                                         kwargs={"username": self.following_user}))
+        self.follower_client.get(
+            reverse("posts:profile_unfollow",
+                    kwargs={"username": self.following_user}))
         self.assertFalse(
             Follow.objects.filter(
                 user=self.follower_user,

@@ -167,4 +167,3 @@ class PostFormTests(TestCase):
         )
         # Проверка появления поста с картинкой в БД
         self.assertEqual(posts_count + 1, Post.objects.count())
-
