@@ -42,7 +42,7 @@ class TestFollowing(TestCase):
     def test_unfollow(self):
         """Текст функционала отписки """
         self.follower_client.get(reverse("posts:profile_unfollow",
-                                     kwargs={"username": self.following_user}))
+                                         kwargs={"username": self.following_user}))
         self.assertFalse(
             Follow.objects.filter(
                 user=self.follower_user,
@@ -55,5 +55,5 @@ class TestFollowing(TestCase):
         self.assertIn(self.post, response.context["page_obj"])
         # Новая запись не появляется в ленте не подписчика
         response = self.not_follower.get(
-                reverse("posts:follow_index"))
+            reverse("posts:follow_index"))
         self.assertNotContains(response, self.post)
