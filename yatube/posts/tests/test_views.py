@@ -83,21 +83,21 @@ class TestViews(TestCase):
     def test_post_with_img_context(self):
         """Проверка картинки в контексте поста"""
         urls = (
-            reverse("posts:post_detail",
-                    kwargs={"post_id": self.post.pk}),
-            reverse('posts:group_list',
-                    kwargs={"slug": self.group.slug}),
-            reverse("posts:profile",
-                    kwargs={'username': self.user}),
-            reverse("posts:index"),
+            (reverse("posts:post_detail",
+                     kwargs={"post_id": self.post.pk}), True),
+            (reverse('posts:group_list',
+                     kwargs={"slug": self.group.slug}), False),
+            (reverse("posts:profile",
+                     kwargs={'username': self.user}), False),
+            (reverse("posts:index"), False),
         )
-        for url in urls:
+        for url, _ in urls:
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
-                if url == reverse("posts:post_detail",
-                                  kwargs={"post_id": self.post.pk}):
+                if _ is True:
                     self.assertEqual(self.post.image,
                                      response.context["post"].image)
                 else:
-                    self.assertEqual(self.post.image,
-                                     response.context["page_obj"][0].image)
+                    self.assertEqual(
+                        self.post.image,
+                        response.context["page_obj"].object_list.pop().image)

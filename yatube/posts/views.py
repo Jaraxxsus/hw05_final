@@ -1,10 +1,8 @@
-
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
-
-from yatube.settings import POST_PER_PAGE  # К-во постов на страницу
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
@@ -16,7 +14,7 @@ def index(request):
     template = "posts/index.html"
     title = "Это главная страница проекта Yatube"
 
-    paginator = Paginator(posts, POST_PER_PAGE)
+    paginator = Paginator(posts, settings.POST_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -33,7 +31,7 @@ def group_posts(request, slug):
     posts = group.posts.select_related('author')
     template = "posts/group_list.html"
 
-    paginator = Paginator(posts, POST_PER_PAGE)
+    paginator = Paginator(posts, settings.POST_PER_PAGE)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -49,21 +47,19 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     users_posts = author.posts.select_related("group")
 
-    paginator = Paginator(users_posts, POST_PER_PAGE)
+    paginator = Paginator(users_posts, settings.POST_PER_PAGE)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    if request.user.is_authenticated:
-        is_follower = Follow.objects.filter(
-            user=request.user, author=author
-        ).exists()
+    if request.user.is_authenticated and request.user != author:
+        is_follower = author.following.exists()
+        # is_not_current_user проверяет не является ли
+        # пользователь текущем, для скрытия кнопки "подписаться"
+        is_not_current_user = author
     else:
         is_follower = False
-    # is_not_current_user проверяет не является ли
-    # пользователь текущем, для скрытия кнопки "подписаться"
-    is_not_current_user = author != request.user
+        is_not_current_user = False
     count_of_posts = paginator.count
-
     context = {
         "author": author,
         "count_of_posts": count_of_posts,
@@ -119,8 +115,7 @@ def post_edit(request, post_id):
             files=request.FILES or None,
             instance=post)
         if form.is_valid():
-            post = form.save(commit=False)
-            post.save()
+            form.save()
             return redirect('posts:post_detail', post_id=post_id)
         context = {
             "is_edit": True,
@@ -149,12 +144,12 @@ def add_comment(request, post_id):
 def follow_index(request):
     post_list = Post.objects.filter(author__following__user=request.user)
 
-    paginator = Paginator(post_list, POST_PER_PAGE)
+    paginator = Paginator(post_list, settings.POST_PER_PAGE)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     # Переменная is_no_following выводит сообщение
     # об отсутствии подписок на авторов
-    is_no_following = len(page_obj) == 0
+    is_no_following = paginator.count == 0
     context = {
         "page_obj": page_obj,
         "is_no_following": is_no_following,
@@ -166,7 +161,7 @@ def follow_index(request):
 def profile_follow(request, username):
     # Подписаться на автора
     author = get_object_or_404(User, username=username)
-    is_follower = Follow.objects.filter(user=request.user, author=author)
+    is_follower = author.following
     if request.user != author and not is_follower.exists():
         Follow.objects.create(user=request.user, author=author)
     return redirect("posts:profile", username=author)
@@ -175,7 +170,7 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    is_follower = Follow.objects.filter(user=request.user, author=author)
+    is_follower = author.following.all()
     if is_follower.exists():
         is_follower.delete()
     return redirect("posts:profile", username=author)

@@ -17,6 +17,11 @@ class StaticUrlTest(TestCase):
         response = self.guest_client.get('/page_doesnt_exist')
         self.assertEqual(response.status_code, 404)
 
+    def test_page_404_has_correct_template(self):
+        """Страница 404 имеет корректный шаблон"""
+        response = self.guest_client.get("/page_doesnt_exist")
+        self.assertTemplateUsed(response, "core/404.html")
+
 
 class TestUrls(TestCase):
     @classmethod
@@ -63,7 +68,9 @@ class TestUrls(TestCase):
                 kwargs={"post_id": self.post.pk}):
                     f"/posts/{self.post.pk}/edit/",
             reverse("posts:post_create"):
-                    "/create/"}
+                    "/create/",
+            reverse("posts:follow_index"): "/follow/"
+        }
         for reversed_name, address in reverse_and_urls.items():
             with self.subTest(address=address):
                 self.assertEqual(reversed_name, address)
@@ -84,7 +91,10 @@ class TestUrls(TestCase):
             reverse("posts:post_create"),
             reverse(
                 "posts:post_edit",
-                kwargs={"post_id": self.post.pk})
+                kwargs={"post_id": self.post.pk}),
+            reverse(
+                "posts:follow_index"
+            )
         )
         for address in data:
             with self.subTest(address=address):
@@ -127,7 +137,10 @@ class TestUrls(TestCase):
                     kwargs={"post_id": self.post.pk}):
                         "posts/create_post.html",
                 reverse("posts:post_create"):
-                    "posts/create_post.html"}
+                    "posts/create_post.html",
+                reverse("posts:follow_index"):
+                    "posts/follow.html"
+                }
 
         for address, template in data.items():
             with self.subTest(address=address):
@@ -143,8 +156,3 @@ class TestUrls(TestCase):
         self.assertRedirects(
             response, reverse("posts:post_detail",
                               kwargs={"post_id": self.post.pk}))
-
-    def test_page_404_has_correct_template(self):
-        """Страница 404 имеет корректный шаблон"""
-        response = self.guest_client.get("/page_doesnt_exist")
-        self.assertTemplateUsed(response, "core/404.html")

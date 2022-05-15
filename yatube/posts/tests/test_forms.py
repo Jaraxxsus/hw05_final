@@ -119,6 +119,14 @@ class PostFormTests(TestCase):
             follow=True,
         )
         self.assertEqual(Comment.objects.count(), comments_count + 1)
+        # проверка текста коммента
+        self.assertEqual("Какой-то коммент", form_data["text"])
+        # комментарий у нужного поста
+        response = self.authorized_client.get(reverse(
+            "posts:post_detail", kwargs={"post_id": self.post.pk}
+        ))
+        self.assertIn(Comment.objects.get(text="Какой-то коммент"),
+                      response.context["comments"])
 
     def test_post_with_picture(self):
         """Тестирование картинки поста"""
@@ -139,7 +147,7 @@ class PostFormTests(TestCase):
         form_data = {
             'text': "Какой-то пост",
             "group": self.group.id,
-            "image": uploaded
+            "image": uploaded,
         }
         response = self.authorized_client.post(
             reverse("posts:post_create"),
@@ -159,3 +167,4 @@ class PostFormTests(TestCase):
         )
         # Проверка появления поста с картинкой в БД
         self.assertEqual(posts_count + 1, Post.objects.count())
+

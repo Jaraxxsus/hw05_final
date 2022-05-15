@@ -12,7 +12,6 @@ class TestCache(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
         cls.user = User.objects.create_user(username='test_user')
         cls.post = Post.objects.create(
             author=cls.user,
@@ -21,13 +20,12 @@ class TestCache(TestCase):
 
     def setUp(self):
         self.guest_client = Client()  # Не авторизованный юзер
-        cache.clear()
 
     def test_post_in_cache(self):
         """При удалении поста, он остается в кеше"""
         response_before_deleting_post = self.guest_client.get(
             reverse("posts:index"))
-        post_obj = Post.objects.get(pk=1)
+        post_obj = Post.objects.get(pk=self.post.pk)
         post_obj.delete()
         response_after_deleting_post = self.guest_client.get(
             reverse("posts:index"))
