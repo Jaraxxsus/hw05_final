@@ -5,9 +5,9 @@
 <article>
   <h1>Все посты пользователя {{ author }}</h1>
   <h3>Всего постов: {{ count_of_posts }}</h3>
-    {% if is_not_current_user %}
+     {% if author != request.user %}
     <div class="mb-5">
-          {% if following %}
+          {% if is_follower %}
     <a
       class="btn btn-lg btn-light"
       href="{% url 'posts:profile_unfollow' author.username %}" role="button"
@@ -23,7 +23,7 @@
       </a>
    {% endif %}
     </div>
- {% endif %}
+    {% endif %}
 
 </article>
             {% for post in page_obj %}

@@ -1,27 +1,22 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.cache import cache_page
+
+from core.paginator import BuildPaginator
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 
 
-@cache_page(20)
 def index(request):
     posts = Post.objects.select_related('author', 'group')
     template = "posts/index.html"
     title = "Это главная страница проекта Yatube"
 
-    paginator = Paginator(posts, settings.POST_PER_PAGE)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
     context = {
         "title": title,
-        "posts": posts,
-        "page_obj": page_obj,
+        "page_obj": BuildPaginator.get_page_obj(
+            request, posts, settings.POST_PER_PAGE)
     }
     return render(request, template, context)
 
@@ -31,14 +26,10 @@ def group_posts(request, slug):
     posts = group.posts.select_related('author')
     template = "posts/group_list.html"
 
-    paginator = Paginator(posts, settings.POST_PER_PAGE)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
     context = {
         "group": group,
-        "posts": posts,
-        "page_obj": page_obj,
+        "page_obj": BuildPaginator.get_page_obj(
+            request, posts, settings.POST_PER_PAGE),
     }
     return render(request, template, context)
 
@@ -47,44 +38,31 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     users_posts = author.posts.select_related("group")
 
-    paginator = Paginator(users_posts, settings.POST_PER_PAGE)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    if request.user.is_authenticated and request.user != author:
-        is_follower = author.following.exists()
-        # is_not_current_user проверяет не является ли
-        # пользователь текущем, для скрытия кнопки "подписаться"
-        is_not_current_user = author
-    else:
-        is_follower = False
-        is_not_current_user = False
-    count_of_posts = paginator.count
+    is_follower = (request.user.is_authenticated and
+                   request.user != author and author.following.exists())
     context = {
         "author": author,
-        "count_of_posts": count_of_posts,
+        "count_of_posts": BuildPaginator.get_paginator_count(
+         users_posts, settings.POST_PER_PAGE),
         "users_posts": users_posts,
-        "page_obj": page_obj,
-        "following": is_follower,
-        "is_not_current_user": is_not_current_user,
+        "page_obj": BuildPaginator.get_page_obj(
+            request, users_posts, settings.POST_PER_PAGE),
+        "is_follower": is_follower,
     }
     return render(request, "posts/profile.html", context)
 
 
 def post_detail(request, post_id):
     post = get_object_or_404(
-        Post.objects.select_related("author", "group"), pk=post_id
+        Post.objects.select_related(
+            "author", "group").prefetch_related("author"), pk=post_id
     )
-    comments = post.comments.all()
-    count_posts = post.author.posts.count()
     form = CommentForm()
     context = {
         "post": post,
-        "count_posts": count_posts,
+        "count_posts": post.author.posts.count(),
         "form": form,
-        "comments": comments
     }
-
     return render(request, "posts/post_detail.html", context)
 
 
@@ -102,7 +80,6 @@ def post_create(request):
         "title": "Добавить запись",
         "is_edit": False
     }
-
     return render(request, 'posts/create_post.html', context)
 
 
@@ -143,16 +120,12 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     post_list = Post.objects.filter(author__following__user=request.user)
-
-    paginator = Paginator(post_list, settings.POST_PER_PAGE)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    # Переменная is_no_following выводит сообщение
-    # об отсутствии подписок на авторов
-    is_no_following = paginator.count == 0
     context = {
-        "page_obj": page_obj,
-        "is_no_following": is_no_following,
+        "page_obj": BuildPaginator.get_page_obj(
+            request, post_list, settings.POST_PER_PAGE
+        ),
+        "is_no_following": BuildPaginator.get_paginator_count(
+            post_list, settings.POST_PER_PAGE) == 0,
     }
     return render(request, 'posts/follow.html', context)
 
@@ -170,7 +143,6 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    is_follower = author.following.all()
-    if is_follower.exists():
-        is_follower.delete()
+    is_follower = author.following.filter(author=author)
+    is_follower.delete()
     return redirect("posts:profile", username=author)

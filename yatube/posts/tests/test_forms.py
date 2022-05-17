@@ -122,11 +122,8 @@ class PostFormTests(TestCase):
         # проверка текста коммента
         self.assertEqual("Какой-то коммент", form_data["text"])
         # комментарий у нужного поста
-        response = self.authorized_client.get(reverse(
-            "posts:post_detail", kwargs={"post_id": self.post.pk}
-        ))
-        self.assertIn(Comment.objects.get(text="Какой-то коммент"),
-                      response.context["comments"])
+        self.assertEqual(Comment.objects.get(text="Какой-то коммент"),
+                         Comment.objects.get(post=self.post.pk))
 
     def test_post_with_picture(self):
         """Тестирование картинки поста"""
