@@ -38,10 +38,9 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     users_posts = author.posts.select_related("group")
 
-    is_follower = (
-            request.user.is_authenticated
-            and request.user != author
-            and author.following.exists())
+    is_follower = (request.user.is_authenticated
+                   and request.user != author
+                   and author.following.exists())
     context = {
         "author": author,
         "count_of_posts": BuildPaginator.get_paginator_count(
