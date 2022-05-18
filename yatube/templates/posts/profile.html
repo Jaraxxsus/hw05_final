@@ -4,7 +4,7 @@
     {% block content %}
 <article>
   <h1>Все посты пользователя {{ author }}</h1>
-  <h3>Всего постов: {{ count_of_posts }}</h3>
+  <h3>Всего постов: {{ page_obj.paginator.count }}</h3>
      {% if author != request.user %}
     <div class="mb-5">
           {% if is_follower %}
